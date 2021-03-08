@@ -11,9 +11,9 @@ namespace PrsServer.Migrations {
 						Description = table.Column<string>(maxLength: 80, nullable: false),
 						Justification = table.Column<string>(maxLength: 80, nullable: false),
 						RejectionReason = table.Column<string>(maxLength: 80, nullable: true),
-						DeliveryMode = table.Column<string>(maxLength: 20, nullable: false),
-						Status = table.Column<string>(maxLength: 10, nullable: false),
-						Total = table.Column<decimal>(type: "decimal(11,2)", nullable: false),
+						DeliveryMode = table.Column<string>(maxLength: 20, nullable: false, defaultValueSql: "'Pickup'"),
+						Status = table.Column<string>(maxLength: 10, nullable: false, defaultValueSql: "'NEW'"),
+						Total = table.Column<decimal>(type: "decimal(11,2)", nullable: false, defaultValueSql: "0"),
 						UserId = table.Column<int>(nullable: false)
 					},
 					constraints: table => {
@@ -33,7 +33,7 @@ namespace PrsServer.Migrations {
 									.Annotation("SqlServer:Identity", "1, 1"),
 						RequestId = table.Column<int>(nullable: false),
 						ProductId = table.Column<int>(nullable: false),
-						Quantity = table.Column<int>(nullable: false)
+						Quantity = table.Column<int>(nullable: false, defaultValueSql: "1")
 					},
 					constraints: table => {
 						table.PrimaryKey("PK_RequestLine", x => x.Id);
