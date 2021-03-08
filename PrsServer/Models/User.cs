@@ -31,7 +31,7 @@ namespace PrsServer.Models {
 		public bool IsReviewer { get; set; }
 		
 		[Required]
-		public int IsAdmin { get; set; }
+		public bool IsAdmin { get; set; }
 		
 
 	}
