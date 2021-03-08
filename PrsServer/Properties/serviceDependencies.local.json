@@ -3,6 +3,10 @@
     "mssql1": {
       "type": "mssql.local",
       "connectionId": "PrsServerContext"
+    },
+    "mssql2": {
+      "type": "mssql.local",
+      "connectionId": "PrsDbContext"
     }
   }
 }

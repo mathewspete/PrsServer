@@ -8,7 +8,7 @@ using PrsServer.Data;
 
 namespace PrsServer.Migrations
 {
-    [DbContext(typeof(PrsServerContext))]
+    [DbContext(typeof(PrsDbContext))]
     [Migration("20210308164034_fixed user.admin")]
     partial class fixeduseradmin
     {

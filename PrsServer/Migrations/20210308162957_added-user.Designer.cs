@@ -8,7 +8,7 @@ using PrsServer.Data;
 
 namespace PrsServer.Migrations
 {
-    [DbContext(typeof(PrsServerContext))]
+    [DbContext(typeof(PrsDbContext))]
     [Migration("20210308162957_added-user")]
     partial class addeduser
     {

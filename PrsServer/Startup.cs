@@ -24,10 +24,13 @@ namespace PrsServer {
 		public void ConfigureServices(IServiceCollection services) {
 			services.AddControllers();
 
-    services.AddDbContext<PrsServerContext>(options =>
+    services.AddDbContext<PrsDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("PrsDb"))); // needs to match Context connection string (data folder)
 
 			services.AddCors();
+
+    services.AddDbContext<PrsDbContext>(options =>
+            options.UseSqlServer(Configuration.GetConnectionString("PrsDbContext")));
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -10,12 +10,57 @@ namespace PrsServer.Controllers {
 	[Route("api/[controller]")]
 	[ApiController]
 	public class UsersController : ControllerBase {
-		private readonly PrsServerContext _context;
+		private readonly PrsDbContext _context;
 
-		public UsersController(PrsServerContext context) {
+		public UsersController(PrsDbContext context) {
 			_context = context;
 		}
 
+
+		// PUT: api/User/login/user
+		//[HttpPut("login/{username}")]
+		//public async Task<IActionResult> LoginUser(string username, User user) {
+		//	if (username != user.Username) {
+		//		return BadRequest();
+		//	}
+
+		//	_context.Entry(user).State = EntityState.Modified;
+
+		//	try {
+		//		await _context.SaveChangesAsync();
+		//	}
+		//	catch (DbUpdateConcurrencyException) {
+		//		if (!UserExists(username)) {
+		//			return NotFound();
+		//		}
+		//		else {
+		//			throw;
+		//		}
+		//	}
+
+		//	return NoContent();
+		//}
+
+
+		// GET: api/Users/id/user/pwd
+		[HttpGet("{username}/{pwd}")]
+		public async Task<ActionResult<User>> CheckPassword(string username, string pwd) {
+			var user = await _context.Users.SingleOrDefaultAsync(x => x.Username == username);
+
+			if (user == null) {
+				return NotFound();
+			}
+
+			if (user.Password != pwd) {
+				System.Console.WriteLine("User Does Not Exists or Invalid Password");
+				return NotFound();
+			}
+
+			return user;
+		}
+
+
+		#region Defaults
 		// GET: api/Users
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<User>>> GetUser() {
@@ -84,7 +129,7 @@ namespace PrsServer.Controllers {
 
 			return user;
 		}
-
+		#endregion
 		private bool UserExists(int id) {
 			return _context.Users.Any(e => e.Id == id);
 		}
