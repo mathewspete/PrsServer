@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PrsServer.Data;
 using PrsServer.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,16 +17,31 @@ namespace PrsServer.Controllers {
 			_context = context;
 		}
 
+		private async Task<IActionResult> CalcSubtotal(int id) {
+			var order = await _context.Request.FindAsync(id);
+			if (order == null) {
+				return NotFound();
+			}
+			order.Total = _context.RequestLine.Where(li => li.RequestId == id)
+																			.Sum(li => li.Quantity * li.Product.Price);
+
+			var rowsAffected = await _context.SaveChangesAsync();
+			if (rowsAffected != 1) {
+				throw new Exception("Failed to Update Request Total");
+			}
+			return Ok();
+		}
+
 		// GET: api/RequestLines
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<RequestLine>>> GetRequestLine() {
-			return await _context.RequestLine.ToListAsync();
+			return await _context.RequestLine.Include(r => r.Request).Include(p => p.Product).ToListAsync();
 		}
 
 		// GET: api/RequestLines/5
 		[HttpGet("{id}")]
 		public async Task<ActionResult<RequestLine>> GetRequestLine(int id) {
-			var requestLine = await _context.RequestLine.FindAsync(id);
+			var requestLine = await _context.RequestLine.Include(r => r.Request).Include(p => p.Product).SingleOrDefaultAsync(rl => rl.Id == id);
 
 			if (requestLine == null) {
 				return NotFound();
@@ -47,6 +63,7 @@ namespace PrsServer.Controllers {
 
 			try {
 				await _context.SaveChangesAsync();
+				await CalcSubtotal(requestLine.RequestId);
 			}
 			catch (DbUpdateConcurrencyException) {
 				if (!RequestLineExists(id)) {
@@ -67,6 +84,7 @@ namespace PrsServer.Controllers {
 		public async Task<ActionResult<RequestLine>> PostRequestLine(RequestLine requestLine) {
 			_context.RequestLine.Add(requestLine);
 			await _context.SaveChangesAsync();
+			await CalcSubtotal(requestLine.RequestId);
 
 			return CreatedAtAction("GetRequestLine", new { id = requestLine.Id }, requestLine);
 		}
@@ -81,6 +99,7 @@ namespace PrsServer.Controllers {
 
 			_context.RequestLine.Remove(requestLine);
 			await _context.SaveChangesAsync();
+			await CalcSubtotal(requestLine.RequestId);
 
 			return requestLine;
 		}

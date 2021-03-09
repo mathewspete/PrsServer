@@ -31,6 +31,11 @@ namespace PrsServer.Data {
 				prod.HasIndex(x => x.PartNbr).IsUnique(true); //config/get idx for Users to use for code column. each Unique
 			});
 
+			builder.Entity<RequestLine>().Property(p => p.Quantity).HasDefaultValue(1);
+			builder.Entity<Request>().Property(p => p.DeliveryMode).HasDefaultValue("Pickup");
+			builder.Entity<Request>().Property(p => p.Status).HasDefaultValue("NEW");
+			builder.Entity<Request>().Property(p => p.Total).HasDefaultValue(0);
+
 		}
 
 	}

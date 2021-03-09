@@ -16,16 +16,97 @@ namespace PrsServer.Controllers {
 			_context = context;
 		}
 
+
+		#region SetStatusReview
+
+		// PUT: api/Requests/Review/5
+		// 
+		[HttpPut("review/{id}")]
+		public async Task<IActionResult> SetToReview(int id) {
+			var request = await _context.Request.FindAsync(id);
+			if (request == null) {
+				return NotFound();
+			}
+			request.Status = (request.Total > 50 && request.Total !=0)?"REVIEW":"APPROVE";
+			return await PutRequest(request.Id, request);
+		}
+
+		#endregion
+
+		#region SetStatusApprove
+		// PUT: api/Requests/Approve/5
+		// 
+		[HttpPut("approve/{id}")]
+		public async Task<IActionResult> SetToApprove(int id) {
+			var request = await _context.Request.FindAsync(id);
+			if (request == null) {
+				return NotFound();
+			}
+			request.Status = "APPROVE";
+			return await PutRequest(request.Id, request);
+		}
+
+		#endregion
+
+		#region SetStatusReject
+		// PUT: api/Requests/Reject/5
+		// 
+		[HttpPut("reject/{id}")]
+		public async Task<IActionResult> SetToReject(int id) {
+			var request = await _context.Request.FindAsync(id);
+			if (request == null) {
+				return NotFound();
+			}
+			request.Status = "REJECT";
+			if (request.RejectionReason == null) {
+				return StatusCode(418); /////// CHECKBACK
+			}
+			return await PutRequest(request.Id, request);
+		}
+
+		#endregion
+
+
+		#region GetPending
+		// GET: api/Requests/pending
+		[HttpGet("pending")]
+		public async Task<ActionResult<IEnumerable<Request>>> GetPending() {
+			return await _context.Request
+				.Where(r => r.Status == "REVIEW")
+				//.Include(c => c.Customer) // include is used to join customer to order
+				.Include(s => s.UserId) // include is used to join salesperson to order
+				.ToListAsync();
+		}
+		#endregion
+
+
+		// GET: api/Requests/User/id
+		[HttpGet("user/{userid}")]
+		public async Task<ActionResult<IEnumerable<Request>>> GetUsersRequest(int id) {
+			return await _context.Request
+								.Where(r => r.UserId == id)
+								.Include(u => u.User)
+								.ToListAsync();
+		}
+
+
+
 		// GET: api/Requests
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<Request>>> GetRequest() {
-			return await _context.Request.ToListAsync();
+			return await _context.Request
+								.Include(u => u.User)
+								.ToListAsync();
 		}
 
 		// GET: api/Requests/5
 		[HttpGet("{id}")]
 		public async Task<ActionResult<Request>> GetRequest(int id) {
-			var request = await _context.Request.FindAsync(id);
+			var request = await _context.Request
+							.Include(u => u.User)
+							.Include(rl => rl.RequestLine)
+							.ThenInclude(p =>p.Product)
+							.SingleOrDefaultAsync(r=>r.Id == id);
 
 			if (request == null) {
 				return NotFound();

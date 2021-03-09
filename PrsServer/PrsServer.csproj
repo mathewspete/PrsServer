@@ -5,6 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20210309150616_edits to requestline.cs" />
+    <Compile Remove="Migrations\20210309150616_edits to requestline.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="microsoft.entityframeworkcore.sqlserver" Version="3.1.12" />
     <PackageReference Include="microsoft.entityframeworkcore.tools" Version="3.1.12">
       <PrivateAssets>all</PrivateAssets>
