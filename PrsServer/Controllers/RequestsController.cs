@@ -59,7 +59,7 @@ namespace PrsServer.Controllers {
 			}
 			request.Status = "REJECT";
 			if (request.RejectionReason == null) {
-				return StatusCode(418); /////// CHECKBACK
+				return StatusCode(405); /////// CHECKBACK
 			}
 			return await PutRequest(request.Id, request);
 		}

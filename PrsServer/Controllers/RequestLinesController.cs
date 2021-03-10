@@ -17,6 +17,8 @@ namespace PrsServer.Controllers {
 			_context = context;
 		}
 
+
+		#region Calc Total
 		private async Task<IActionResult> CalcSubtotal(int id) {
 			var order = await _context.Request.FindAsync(id);
 			if (order == null) {
@@ -32,12 +34,19 @@ namespace PrsServer.Controllers {
 			return Ok();
 		}
 
+		#endregion
+
+
+		#region Get ALL Requestlines
 		// GET: api/RequestLines
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<RequestLine>>> GetRequestLine() {
 			return await _context.RequestLine.Include(r => r.Request).Include(p => p.Product).ToListAsync();
 		}
+		#endregion
 
+
+		#region Get Single Requestline
 		// GET: api/RequestLines/5
 		[HttpGet("{id}")]
 		public async Task<ActionResult<RequestLine>> GetRequestLine(int id) {
@@ -49,7 +58,10 @@ namespace PrsServer.Controllers {
 
 			return requestLine;
 		}
+		#endregion
 
+
+		#region PUT (calc tot) (varify Qty)
 		// PUT: api/RequestLines/5
 		// To protect from overposting attacks, enable the specific properties you want to bind to, for
 		// more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
@@ -58,37 +70,53 @@ namespace PrsServer.Controllers {
 			if (id != requestLine.Id) {
 				return BadRequest();
 			}
-
+			
 			_context.Entry(requestLine).State = EntityState.Modified;
-
-			try {
-				await _context.SaveChangesAsync();
-				await CalcSubtotal(requestLine.RequestId);
-			}
-			catch (DbUpdateConcurrencyException) {
-				if (!RequestLineExists(id)) {
-					return NotFound();
+			if (requestLine.Quantity>0) {
+				try {
+					await _context.SaveChangesAsync();
+					await CalcSubtotal(requestLine.RequestId);
 				}
-				else {
-					throw;
+				catch (DbUpdateConcurrencyException) {
+					if (!RequestLineExists(id)) {
+						return NotFound();
+					}
+					else {
+						throw;
+					}
 				}
 			}
+			else { 
+				return StatusCode(405); /////// CHECKBACK
+			}
+				
 
 			return NoContent();
 		}
 
+		#endregion
+
+
+		#region Post (Calc)
 		// POST: api/RequestLines
 		// To protect from overposting attacks, enable the specific properties you want to bind to, for
 		// more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
 		[HttpPost]
 		public async Task<ActionResult<RequestLine>> PostRequestLine(RequestLine requestLine) {
+
+			if (requestLine.Quantity <= 0) {
+				return StatusCode(405); /////// CHECKBACK
+			}
+
 			_context.RequestLine.Add(requestLine);
 			await _context.SaveChangesAsync();
 			await CalcSubtotal(requestLine.RequestId);
 
 			return CreatedAtAction("GetRequestLine", new { id = requestLine.Id }, requestLine);
 		}
+		#endregion
 
+		#region Delete
 		// DELETE: api/RequestLines/5
 		[HttpDelete("{id}")]
 		public async Task<ActionResult<RequestLine>> DeleteRequestLine(int id) {
@@ -103,9 +131,13 @@ namespace PrsServer.Controllers {
 
 			return requestLine;
 		}
+		#endregion
+
 
 		private bool RequestLineExists(int id) {
 			return _context.RequestLine.Any(e => e.Id == id);
 		}
+
+
 	}
 }
