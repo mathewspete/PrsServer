@@ -102,7 +102,8 @@ namespace PrsServer.Controllers {
 				}
 			}
 
-			return NoContent();
+			return Accepted();
+			//return NoContent();
 		}
 
 		// POST: api/Users

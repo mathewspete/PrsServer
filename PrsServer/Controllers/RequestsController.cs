@@ -16,6 +16,18 @@ namespace PrsServer.Controllers {
 			_context = context;
 		}
 
+		#region SetStatusNew
+
+		public async Task<IActionResult> SetToNew(int id) {
+			var request = await _context.Request.FindAsync(id);
+			if (request == null) {
+				return NotFound();
+			}
+			request.Status = "NEW";
+			return await PutRequest(request.Id, request);
+		}
+
+		#endregion
 
 		#region SetStatusReview
 
@@ -52,16 +64,44 @@ namespace PrsServer.Controllers {
 		// PUT: api/Requests/Reject/5
 		// 
 		[HttpPut("reject/{id}")]
-		public async Task<IActionResult> SetToReject(int id) {
-			var request = await _context.Request.FindAsync(id);
-			if (request == null) {
-				return NotFound();
+		//public async Task<IActionResult> SetToReject(int id) {
+		//	var request = await _context.Request.FindAsync(id);
+		//	if (request == null) {
+		//		return NotFound();
+		//	}
+		//	request.Status = "REJECT";
+		//	if (request.RejectionReason == null) {
+		//		return StatusCode(406); /////// CHECKBACK
+		//	}
+		//	return await PutRequest(request.Id, request);
+		//}
+
+
+		public async Task<IActionResult> SetToReject(int id, Request request) {
+			if (id != request.Id) {
+				//return BadRequest();
+				return StatusCode(412);
+			}
+			if (request.RejectionReason == null) {
+				return StatusCode(406); /////// CHECKBACK
 			}
 			request.Status = "REJECT";
-			if (request.RejectionReason == null) {
-				return StatusCode(405); /////// CHECKBACK
+
+			_context.Entry(request).State = EntityState.Modified;
+
+			try {
+				await _context.SaveChangesAsync();
 			}
-			return await PutRequest(request.Id, request);
+			catch (DbUpdateConcurrencyException) {
+				if (!RequestExists(id)) {
+					return NotFound();
+				}
+				else {
+					throw;
+				}
+			}
+
+			return NoContent();
 		}
 
 		#endregion
@@ -72,15 +112,29 @@ namespace PrsServer.Controllers {
 		[HttpGet("pending")]
 		public async Task<ActionResult<IEnumerable<Request>>> GetPending() {
 			return await _context.Request
+				.Include(u => u.User)
 				.Where(r => r.Status == "REVIEW")
 				//.Include(c => c.Customer) // include is used to join customer to order
-				.Include(s => s.UserId) // include is used to join salesperson to order
+				// .Include(s => s.UserId) // include is used to join salesperson to order
+				.ToListAsync();
+		}
+		#endregion
+
+		#region GetPendingNotUsers
+		// GET: api/Requests/pending/uid
+		[HttpGet("pending/{userid}")]
+		public async Task<ActionResult<IEnumerable<Request>>> GetReview(int userid) {
+			return await _context.Request
+				.Include(u => u.User)
+				.Where(r => r.Status == "REVIEW" && r.UserId != userid)
+				//.Include(c => c.Customer) // include is used to join customer to order
+				// .Include(s => s.UserId) // include is used to join salesperson to order
 				.ToListAsync();
 		}
 		#endregion
 
 
-		// GET: api/Requests/User/id
+		#region // GET: api/Requests/User/id
 		[HttpGet("user/{userid}")]
 		public async Task<ActionResult<IEnumerable<Request>>> GetUsersRequest(int id) {
 			return await _context.Request
@@ -89,9 +143,9 @@ namespace PrsServer.Controllers {
 								.ToListAsync();
 		}
 
+		#endregion
 
-
-		// GET: api/Requests
+		#region // GET: api/Requests
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<Request>>> GetRequest() {
 			return await _context.Request
@@ -99,7 +153,10 @@ namespace PrsServer.Controllers {
 								.ToListAsync();
 		}
 
-		// GET: api/Requests/5
+		#endregion
+
+
+		#region // GET: api/Requests/5
 		[HttpGet("{id}")]
 		public async Task<ActionResult<Request>> GetRequest(int id) {
 			var request = await _context.Request
@@ -114,8 +171,10 @@ namespace PrsServer.Controllers {
 
 			return request;
 		}
+		#endregion
 
-		// PUT: api/Requests/5
+
+		#region // PUT: api/Requests/5
 		// To protect from overposting attacks, enable the specific properties you want to bind to, for
 		// more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
 		[HttpPut("{id}")]
@@ -140,12 +199,14 @@ namespace PrsServer.Controllers {
 
 			return NoContent();
 		}
+		#endregion
 
-		// POST: api/Requests
+		#region // POST: api/Requests
 		// To protect from overposting attacks, enable the specific properties you want to bind to, for
 		// more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
 		[HttpPost]
 		public async Task<ActionResult<Request>> PostRequest(Request request) {
+			request.Status = "NEW";
 			_context.Request.Add(request);
 			await _context.SaveChangesAsync();
 
@@ -169,5 +230,8 @@ namespace PrsServer.Controllers {
 		private bool RequestExists(int id) {
 			return _context.Request.Any(e => e.Id == id);
 		}
+
+		#endregion
+
 	}
 }

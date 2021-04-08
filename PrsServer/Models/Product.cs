@@ -27,7 +27,10 @@ namespace PrsServer.Models {
 		public string PhotoPath { get; set; }
 
 		public int VendorId { get; set; }
+
+		//public virtual IEnumerable<Vendor> Vendor { get; set; }
 		public virtual Vendor Vendor { get; set; }
+
 
 
 	}

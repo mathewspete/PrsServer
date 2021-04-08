@@ -19,13 +19,17 @@ namespace PrsServer.Controllers {
 		// GET: api/Products
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<Product>>> GetProduct() {
-			return await _context.Product.ToListAsync();
+			return await _context.Product.Include(v => v.Vendor).ToListAsync();
 		}
+
 
 		// GET: api/Products/5
 		[HttpGet("{id}")]
 		public async Task<ActionResult<Product>> GetProduct(int id) {
-			var product = await _context.Product.FindAsync(id);
+			var product = await _context.Product.Include(v => v.Vendor).SingleOrDefaultAsync(p=>p.Id==id);
+
+
+			//var product = await _context.Product.FindAsync(id);
 
 			if (product == null) {
 				return NotFound();
@@ -40,7 +44,7 @@ namespace PrsServer.Controllers {
 		[HttpPut("{id}")]
 		public async Task<IActionResult> PutProduct(int id, Product product) {
 			if (id != product.Id) {
-				return BadRequest();
+				return ValidationProblem();
 			}
 
 			_context.Entry(product).State = EntityState.Modified;

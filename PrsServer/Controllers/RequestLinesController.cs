@@ -98,13 +98,17 @@ namespace PrsServer.Controllers {
 
 
 		#region Post (Calc)
-		// POST: api/RequestLines
+		// POST: api/RequestLines/"{reqId}"
 		// To protect from overposting attacks, enable the specific properties you want to bind to, for
 		// more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
+		// [HttpPost("{reqId}")]
 		[HttpPost]
-		public async Task<ActionResult<RequestLine>> PostRequestLine(RequestLine requestLine) {
+		// public async Task<ActionResult<RequestLine>> PostRequestLine(RequestLine requestLine, int reqId) {
+		public async Task<ActionResult<RequestLine>> PostRequestLine(RequestLine requestLine, int reqId) {
 
-			if (requestLine.Quantity <= 0) {
+				//requestLine.RequestId = reqId;
+
+				if (requestLine.Quantity <= 0) {
 				return StatusCode(405); /////// CHECKBACK
 			}
 
