@@ -61,6 +61,19 @@ namespace PrsServer.Controllers {
 		#endregion
 
 
+		#region GetByRequestId
+		// GET: api/Requestlines/Request/5
+		[HttpGet("request/{requestid}")]
+		public async Task<ActionResult<IEnumerable<RequestLine>>> GetRequestLines(int requestid) {
+			return await _context.RequestLine
+				.Include(r => r.Request)
+				.Include(p => p.Product)
+				.Where(rl => rl.RequestId == requestid)
+				.ToListAsync();
+		}
+		#endregion
+
+
 		#region PUT (calc tot) (varify Qty)
 		// PUT: api/RequestLines/5
 		// To protect from overposting attacks, enable the specific properties you want to bind to, for
@@ -70,7 +83,6 @@ namespace PrsServer.Controllers {
 			if (id != requestLine.Id) {
 				return BadRequest();
 			}
-			
 			_context.Entry(requestLine).State = EntityState.Modified;
 			if (requestLine.Quantity>0) {
 				try {
@@ -89,8 +101,6 @@ namespace PrsServer.Controllers {
 			else { 
 				return StatusCode(405); /////// CHECKBACK
 			}
-				
-
 			return NoContent();
 		}
 
@@ -120,6 +130,37 @@ namespace PrsServer.Controllers {
 		}
 		#endregion
 
+		#region Post Array (Calc)
+		//// POST: api/RequestLines/"{reqId}"
+		//// To protect from overposting attacks, enable the specific properties you want to bind to, for
+		//// more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
+		//// [HttpPost("{reqId}")]
+		//[HttpPost]
+		//// public async Task<ActionResult<RequestLine>> PostRequestLine(RequestLine requestLine, int reqId) {
+		//public async Task<ActionResult<IEnumerable<RequestLine>> PostRequestLines(RequestLine[] requestLines, int reqId) {
+
+		//	foreach (RequestLine requestLine in requestLines) {
+
+		//	//requestLine.RequestId = reqId;
+
+		//	if (requestLine.Quantity <= 0) {
+		//		return StatusCode(405); /////// CHECKBACK
+		//	}
+
+		//	_context.RequestLine.Add(requestLine);
+		//	await _context.SaveChangesAsync();
+		//	await CalcSubtotal(requestLine.RequestId);
+
+		//	return CreatedAtAction("GetRequestLine", new { id = requestLine.Id }, requestLine);
+			
+		//	}
+
+		//	public async Task<ActionResult<IEnumerable<RequestLine>>> GetRequestLine() {
+		//		return await _context.RequestLine.Include(r => r.Request).Include(p => p.Product).ToListAsync();
+		//	}
+		//}
+		#endregion
+
 		#region Delete
 		// DELETE: api/RequestLines/5
 		[HttpDelete("{id}")]
@@ -145,3 +186,4 @@ namespace PrsServer.Controllers {
 
 	}
 }
+ 

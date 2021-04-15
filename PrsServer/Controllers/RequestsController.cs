@@ -39,7 +39,7 @@ namespace PrsServer.Controllers {
 			if (request == null) {
 				return NotFound();
 			}
-			request.Status = (request.Total > 50 && request.Total !=0)?"REVIEW":"APPROVE";
+			request.Status = (request.Total > 50 && request.Total !=0)?"PENDING":"APPROVED";
 			return await PutRequest(request.Id, request);
 		}
 
@@ -54,7 +54,7 @@ namespace PrsServer.Controllers {
 			if (request == null) {
 				return NotFound();
 			}
-			request.Status = "APPROVE";
+			request.Status = "APPROVED";
 			return await PutRequest(request.Id, request);
 		}
 
@@ -85,7 +85,7 @@ namespace PrsServer.Controllers {
 			if (request.RejectionReason == null) {
 				return StatusCode(406); /////// CHECKBACK
 			}
-			request.Status = "REJECT";
+			request.Status = "REJECTED";
 
 			_context.Entry(request).State = EntityState.Modified;
 
@@ -113,7 +113,7 @@ namespace PrsServer.Controllers {
 		public async Task<ActionResult<IEnumerable<Request>>> GetPending() {
 			return await _context.Request
 				.Include(u => u.User)
-				.Where(r => r.Status == "REVIEW")
+				.Where(r => r.Status == "PENDING")
 				//.Include(c => c.Customer) // include is used to join customer to order
 				// .Include(s => s.UserId) // include is used to join salesperson to order
 				.ToListAsync();
@@ -126,7 +126,7 @@ namespace PrsServer.Controllers {
 		public async Task<ActionResult<IEnumerable<Request>>> GetReview(int userid) {
 			return await _context.Request
 				.Include(u => u.User)
-				.Where(r => r.Status == "REVIEW" && r.UserId != userid)
+				.Where(r => r.Status == "PENDING" && r.UserId != userid)
 				//.Include(c => c.Customer) // include is used to join customer to order
 				// .Include(s => s.UserId) // include is used to join salesperson to order
 				.ToListAsync();
@@ -138,8 +138,8 @@ namespace PrsServer.Controllers {
 		[HttpGet("user/{userid}")]
 		public async Task<ActionResult<IEnumerable<Request>>> GetUsersRequest(int id) {
 			return await _context.Request
-								.Where(r => r.UserId == id)
 								.Include(u => u.User)
+								.Where(r => r.UserId == id)
 								.ToListAsync();
 		}
 

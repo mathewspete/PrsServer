@@ -14,8 +14,8 @@ namespace PrsServer.Models {
 		[StringLength(30), Required]
 		public string PartNbr { get; set; }
 
-		[StringLength(30), Required]
-		public string Name { get; set; }
+		[StringLength(300), Required]
+		public string Name { get; set; }  
 
 		[Column(TypeName = "decimal(9,2)"), Required]
 		public decimal Price { get; set; }
