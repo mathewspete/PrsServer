@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PrsServer.Data;
 
 namespace PrsServer.Migrations
 {
     [DbContext(typeof(PrsDbContext))]
-    partial class PrsServerContextModelSnapshot : ModelSnapshot
+    [Migration("20210417233935_RequestDate")]
+    partial class RequestDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
